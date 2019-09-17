@@ -8,6 +8,10 @@ static int gos_cb_wrapper(struct skynet_context * context, void *ud, int type, i
 	gos_cb(context, ud, type, session, (int)source, (char*)msg, (int)sz);
 }
 
+static inline int send_message(struct skynet_context * context, int destination, int type, int session, char* msg, int sz) {
+	return skynet_send(context, 0, (uint32_t)destination, type, session, msg, (size_t)sz);
+}
+
 static inline void set_gos_callback(struct skynet_context * context, uintptr_t ud) {
 	skynet_callback(context, (void*)ud, gos_cb_wrapper);
 }
@@ -43,6 +47,7 @@ func getEnv(ptr uintptr) *gosEnv {
 func gos_cb(context *C.struct_skynet_context, ptr unsafe.Pointer, typ C.int, session C.int, source C.int, s *C.char, sz C.int) C.int {
 	msg := C.GoStringN(s, sz)
 	log.Printf("gos cb: from %d, session: %d, msg:%s", source, session, msg)
+	C.send_message(context, source, 1, session, s, sz)
 	return 0
 }
 
